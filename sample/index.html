@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Tesla Commands</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { color-scheme: light dark; }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      max-width: 1000px; margin: 24px auto; padding: 0 16px;
+      line-height: 1.4;
+    }
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    .muted { color: #666; font-size: .95rem; }
+    .card {
+      border: 1px solid #ddd; border-radius: 12px; padding: 14px; background: #fff;
+    }
+    .badge {
+      display: inline-block; padding: 4px 10px; border: 1px solid #ccc;
+      border-radius: 999px; font-size: .85rem; background: #f7f7f7;
+      max-width: 100%;
+    }
+    .badge span { overflow-wrap: anywhere; }
+    .fields {
+      display: grid; gap: 12px; margin-top: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    label.small { font-size: .85rem; color:#555; display:block; margin-bottom: 4px; }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #bbb;
+      min-height: 40px; background: inherit;
+    }
+    .btns {
+      display: grid; gap: 12px; margin: 16px 0;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    button {
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid #999; background: #f6f6f6; cursor: pointer; font-weight: 600;
+    }
+    button:hover { background: #eee; }
+    button[disabled] { opacity: .6; cursor: wait; }
+    pre {
+      background: #fafafa; border: 1px solid #eee; border-radius: 10px;
+      padding: 12px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+      min-height: 70px;
+    }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .right { margin-left:auto; }
+  </style>
+</head>
+<body>
+  <h1>Tesla Commands</h1>
+  <div class="muted">API: <code>POST /commands/(wake|unlock|lock|open_port|close_port)</code></div>
+
+  <div class="card">
+    <div class="row">
+      <div class="badge">Vehicle Tag: <span id="tag">3744244687446742</span></div>
+      <div class="badge">Base URL: <span id="base">https://aliare.co.jp/tesla/tesla_api/public/api</span></div>
+      <div class="badge right" id="status">idle</div>
+    </div>
+
+    <div class="fields">
+      <div>
+        <label class="small">（必要なら書き換え）Vehicle Tag</label>
+        <input id="tagInput" type="text" value="3744244687446742" />
+      </div>
+      <div>
+        <label class="small">（必要なら書き換え）Base URL</label>
+        <input id="baseInput" type="text" value="https://aliare.co.jp/tesla/tesla_api/public/api" />
+      </div>
+      <div>
+        <label class="small">API Key（JSON の "key" に入る値。未入力は "ABC"）</label>
+        <input id="apiKeyInput" type="password" placeholder="ABC" />
+      </div>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button id="btn-wake">起こす (wake)</button>
+    <button id="btn-unlock">アンロック (unlock)</button>
+    <button id="btn-lock">ロック (lock)</button>
+    <button id="btn-open-port">ポート開 (open_port)</button>
+    <button id="btn-close-port">ポート閉 (close_port)</button>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content: space-between">
+      <div class="muted">直近のリクエスト</div>
+    </div>
+    <pre id="out">(結果がここに表示されます)</pre>
+  </div>
+
+  <script>
+    // ===== 要素参照 =====
+    const els = {
+      tag: document.getElementById('tag'),
+      base: document.getElementById('base'),
+      tagInput: document.getElementById('tagInput'),
+      baseInput: document.getElementById('baseInput'),
+      apiKeyInput: document.getElementById('apiKeyInput'),
+      out: document.getElementById('out'),
+      status: document.getElementById('status'),
+      buttons: {
+        wake: document.getElementById('btn-wake'),
+        unlock: document.getElementById('btn-unlock'),
+        lock: document.getElementById('btn-lock'),
+        open_port: document.getElementById('btn-open-port'),
+        close_port: document.getElementById('btn-close-port'),
+      }
+    };
+
+    function getConfig() {
+      const base = els.baseInput.value.trim().replace(/\/+$/, '');
+      const tag = els.tagInput.value.trim();
+      const apiKey = (els.apiKeyInput.value.trim() || 'ABC');
+      els.base.textContent = base;
+      els.tag.textContent = tag;
+      return { base, tag, apiKey };
+    }
+
+    async function callCommand(action) {
+      const { base, tag, apiKey } = getConfig();
+      const url = `${base}/vehicles/${encodeURIComponent(tag)}/commands/${action}`;
+
+      setBusy(true, `POST ${url}`);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: apiKey })
+        });
+
+        const text = await res.text();
+        let json; try { json = JSON.parse(text); } catch { json = { raw: text }; }
+
+        show({
+          ok: res.ok, status: res.status, url, action,
+          requestBody: { key: mask(apiKey) }, response: json
+        });
+      } catch (e) {
+        show({ ok: false, status: 0, url, action, error: String(e) });
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function mask(s){ if(!s) return ''; return s.length<=4? '*'.repeat(s.length) : s[0]+'*'.repeat(s.length-2)+s.slice(-1); }
+    function setBusy(b,label){ els.status.textContent = b? `running… ${label||''}`:'idle'; Object.values(els.buttons).forEach(bn=>bn.disabled=b); }
+    function show(obj){ els.out.textContent = JSON.stringify(obj,null,2); els.status.textContent = obj.ok? 'success': ('error '+(obj.status||'')); }
+
+    // クリック
+    els.buttons.wake.addEventListener('click', () => callCommand('wake'));
+    els.buttons.unlock.addEventListener('click', () => callCommand('unlock'));
+    els.buttons.lock.addEventListener('click', () => callCommand('lock'));
+    els.buttons.open_port.addEventListener('click', () => callCommand('open_port'));
+    els.buttons.close_port.addEventListener('click', () => callCommand('close_port'));
+
+    // 初期表示
+    getConfig();
+  </script>
+</body>
+</html>
