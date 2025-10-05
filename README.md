@@ -1,6 +1,6 @@
 # アリアーレ Tesla コマンドAPI 仕様書（開発者向け）
 
-最終更新: 2025-10-04 (JST)
+最終更新: 2025-10-05 (JST)
 
 ---
 
@@ -8,18 +8,16 @@
 
 テスラ車両に対して「起床（wake）」「解錠（unlock）」「施錠（lock）」「充電ポート開/閉（open\_port/close\_port）」の各コマンドを発行するための**HTTP POST API**です。すべてのエンドポイントは **HTTPS** で提供され、**JSON** リクエスト/レスポンスを想定します。
 
-> **注意**: 本APIは社内/限定公開用です。第三者への開示は避けてください。
-
 ---
 
 ## ベースURL
 - 本番環境
 ```
-https://aliare.co.jp/tesla/tesla_api/public
+https://aliare.co.jp/tesla/tesla_api/public/api
 ```
 - 開発環境
 ```
-https://aliare.co.jp/tesla/tesla_api/public
+https://aliare.co.jp/tesla/tesla_api/public/api/dev
 ```
 ## 共通リクエスト仕様
 
@@ -29,9 +27,7 @@ https://aliare.co.jp/tesla/tesla_api/public
   ```json
   { "key": "<YOUR_API_KEY>" }
   ```
-- **パスパラメータ**
-  - `:vehicle_id` $2014 例: `3744244687446742`
-- **タイムアウト推奨**: クライアント側 10$301C30秒
+
 
 ## 共通レスポンス仕様
 
@@ -77,7 +73,7 @@ https://aliare.co.jp/tesla/tesla_api/public
 
 ### 1) 車両起床（Wake Vehicle）
 
-**POST** `/api/vehicles/:tag/commands/wake`
+**POST** `/vehicles/:tag/commands/wake`
 
 **Request Body**
 
@@ -100,7 +96,7 @@ https://aliare.co.jp/tesla/tesla_api/public
 
 ### 2) 解錠 / 3) 施錠 / 4) ポート開閉
 
-**POST** `/api/vehicles/:tag/commands/{unlock|lock|open_port|close_port}`
+**POST** `/vehicles/:tag/commands/{unlock|lock|open_port|close_port}`
 
 **Request Body**
 

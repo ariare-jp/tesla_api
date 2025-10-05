@@ -58,7 +58,7 @@
   <div class="card">
     <div class="row">
       <div class="badge">Vehicle Tag: <span id="tag">3744244687446742</span></div>
-      <div class="badge">Base URL: <span id="base">https://aliare.co.jp/tesla/tesla_api/public/api</span></div>
+      <div class="badge">Base URL: <span id="base">https://aliare.co.jp/tesla/tesla_api/public/api/dev</span></div>
       <div class="badge right" id="status">idle</div>
     </div>
 
@@ -69,11 +69,11 @@
       </div>
       <div>
         <label class="small">（必要なら書き換え）Base URL</label>
-        <input id="baseInput" type="text" value="https://aliare.co.jp/tesla/tesla_api/public/api" />
+        <input id="baseInput" type="text" value="https://aliare.co.jp/tesla/tesla_api/public/api/dev" />
       </div>
       <div>
-        <label class="small">API Key（JSON の "key" に入る値。未入力は "ABC"）</label>
-        <input id="apiKeyInput" type="password" placeholder="ABC" />
+        <label class="small">API Key</label>
+        <input id="apiKeyInput" type="password" placeholder="" />
       </div>
     </div>
   </div>
@@ -115,7 +115,7 @@
     function getConfig() {
       const base = els.baseInput.value.trim().replace(/\/+$/, '');
       const tag = els.tagInput.value.trim();
-      const apiKey = (els.apiKeyInput.value.trim() || 'ABC');
+      const apiKey = (els.apiKeyInput.value.trim());
       els.base.textContent = base;
       els.tag.textContent = tag;
       return { base, tag, apiKey };
