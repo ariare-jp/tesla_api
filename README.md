@@ -13,11 +13,11 @@
 ## ベースURL
 - 本番環境
 ```
-https://aliare.co.jp/tesla/tesla_api/public/api
+https://tesla.aliare.co.jp/tesla/tesla_api/public/api
 ```
 - 開発環境
 ```
-https://aliare.co.jp/tesla/tesla_api/public/api/dev
+https://tesla.aliare.co.jp/tesla/tesla_api/public/api/dev
 ```
 ## 共通リクエスト仕様
 
