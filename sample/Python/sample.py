@@ -1,6 +1,6 @@
 import requests
 
-url =  "https://aliare.co.jp/tesla/tesla_api/public/api/dev/vehicles/3744244687446742/commands/wake"
+url =  "https://tesla.aliare.co.jp/tesla/tesla_api/public/api/dev/vehicles/3744244687446742/commands/wake"
 payload = {
 	"key": ""
 }

@@ -1,4 +1,4 @@
-const url =  "https://aliare.co.jp/tesla/tesla_api/public/api/dev/vehicles/3744244687446742/commands/wake";
+const url =  "https://tesla.aliare.co.jp/tesla/tesla_api/public/api/dev/vehicles/3744244687446742/commands/wake";
 const payload = { key: "" };
 
 async function postwake() {
